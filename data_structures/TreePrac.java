@@ -20,8 +20,8 @@ class BinaryTreeNode {
     }
 }
 
+// ------------------------------
 // Binary Search Tree
-
 class BSTNode extends BinaryTreeNode {
     // Add in tracking parents for 
     // finding In-order predecessor
@@ -142,7 +142,9 @@ class BST {
 
         // Check if left or right branch of parent
         boolean left = false;
-        if (deleteNode.value == parentNode.left.value){
+        if (parentNode != null && 
+            parentNode.left != null && 
+            deleteNode.value == parentNode.left.value){
             left = true;
         }
 
@@ -215,7 +217,13 @@ class BST {
     }
 
 
-    private void helper_assign_child(BSTNode parentNode, BSTNode childNode, boolean left){
+    protected void helper_assign_child(BSTNode parentNode, BSTNode childNode, boolean left){
+        childNode.parent = parentNode;
+        if (parentNode == null){
+            this.root = childNode;
+            return;
+        }
+
         if (left){
             parentNode.left = childNode;
         } else {
@@ -226,13 +234,107 @@ class BST {
 
 }
 
+// ------------------------------
 // Red-black Tree: Balanced BST
-// Due to complexity, will cover later on :D
+// Due to complexity, nodeDeletion will cover later on :D
+
+class RedBlackNode extends BSTNode{
+    // Inherited value
+    RedBlackNode left;
+    RedBlackNode right;
+    RedBlackNode parent;
+    boolean isRed;
+
+    public RedBlackNode(Long value, boolean isRed){
+        super(value);
+        this.isRed = isRed;
+    }
+
+    public RedBlackNode(Long value, RedBlackNode parent, boolean isRed){
+        super(value, parent);
+        this.isRed = isRed;
+    }
+
+    public RedBlackNode(Long value, RedBlackNode left, 
+                        RedBlackNode right, RedBlackNode parent, boolean isRed){
+        super(value, left, right, parent);
+        this.isRed = isRed;
+    }
+}
+
+class RedBlackTree extends BST {
+    // Difference: Deletion and Insertion
+    public RedBlackTree(List<Long> input){
+        // input: List of values of nodes
+        super(input);
+    }
+
+    private void rotateRight(RedBlackNode curNode){
+        // curNode must be the left-child of parent
+        // parent != null
+        RedBlackNode parent = curNode.parent;
+        RedBlackNode grandparent = parent.parent;
+        RedBlackNode right_child = curNode.right;
+
+        // Move parent to right_child
+        curNode.right = parent;
+        parent.parent = curNode;
+
+        // Move right_child to parent's new left child
+        parent.left = right_child;
+        right_child.parent = parent;
+
+        // Connect curNode to grandparent
+        helper_assign_child(grandparent, curNode, 
+            parent.value == grandparent.left.value);
+    }
+
+    private void rotateLeft(RedBlackNode curNode){
+        // curNode must be the right-child of parent
+        // parent != null
+        RedBlackNode parent = curNode.parent;
+        RedBlackNode grandparent = parent.parent;
+        RedBlackNode left_child = curNode.left;
+
+        // Move parent to left_child
+        curNode.left = parent;
+        parent.parent = curNode;
+
+        // Move left_child to parent's new right child
+        parent.right = left_child;
+        left_child.parent = parent;
+
+        // Connect curNode to grandparent
+        helper_assign_child(grandparent, curNode, 
+            parent.value == grandparent.left.value);
+    }
+}
+
+//------------------------------
+// Testing
 
 public class TreePrac {
     public static void main(String[] args) {
+        System.out.println("BINARY TREE:");
         List<Long> nodes = new ArrayList<Long>(Arrays.asList(1l, 2l, 176l, 19l, 99l));
         BST testBst = new BST(nodes);
         testBst.inorderTraverse(testBst.root);
+
+        // Add
+        System.out.println("\n Add: 25");
+        testBst.addElem(25l);
+        testBst.inorderTraverse(testBst.root);
+
+        // Delete
+        System.out.println("\n Remove: 1");
+        testBst.deleteElem(1l);
+        testBst.inorderTraverse(testBst.root);
+
+        // Status
+        System.out.println("\n Helper stats:");
+        System.out.println("Minimum node val: " + testBst.findMin(testBst.root).value);
+        System.out.println("Maximum node val: " + testBst.findMax(testBst.root).value);
+        System.out.println("Height: " + testBst.getHeight(testBst.root));
+
     }
 }
