@@ -274,6 +274,7 @@ class RedBlackNode extends BSTNode{
 class RedBlackTree extends BST {
     // Inspired by: https://samuelalbanie.com/files/digest-slides/2022-12-brief-guide-to-red-black-trees.pdf
     // Difference: Deletion and Insertion
+    // Implemented Insertion, Deletion for later
     RedBlackNode root;
 
     public RedBlackTree(List<Long> input){
@@ -488,7 +489,10 @@ class RedBlackTree extends BST {
     }
 }
 
+//-----------------------------
 // B-tree: Future implementation
+
+
 //------------------------------
 // Testing
 
@@ -522,13 +526,6 @@ public class TreePrac {
         System.out.println("\n RED-BLACK TREE");
 
         RedBlackTree testRedBlackTree = new RedBlackTree(nodes);
-
-        // System.out.println(testRedBlackTree.root.value);
-        // System.out.println(testRedBlackTree.root.left);
-        // System.out.println(testRedBlackTree.root.right.value);
-        // System.out.println(testRedBlackTree.root.right.left.value);
-        // System.out.println(testRedBlackTree.root.right.right.value);
-
         System.out.println("Height: " + testRedBlackTree.getHeight(testRedBlackTree.root));
         testRedBlackTree.inorderTraverse(testRedBlackTree.root);
         
