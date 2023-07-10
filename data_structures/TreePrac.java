@@ -246,31 +246,47 @@ class RedBlackNode extends BSTNode{
     RedBlackNode right;
     RedBlackNode parent;
     boolean isRed;
+    boolean isNull; // For null nodes (leaves)
 
-    public RedBlackNode(Long value){
-        super(value);
-        this.isRed = false;
-    }
-
-    public RedBlackNode(Long value, boolean isRed){
-        super(value);
-        this.isRed = isRed;
-    }
-
-    public RedBlackNode(Long value, RedBlackNode parent, boolean isRed){
-        super(value);
-        this.parent = parent;
-        this.isRed = isRed;
-    }
 
     public RedBlackNode(Long value, RedBlackNode left, 
-                        RedBlackNode right, RedBlackNode parent, boolean isRed){
+                        RedBlackNode right, RedBlackNode parent, 
+                        boolean isRed, boolean isNull){
         super(value);
         this.left = left;
         this.right = right;
         this.parent = parent;
         this.isRed = isRed;
+        this.isNull = isNull;
     }
+
+    public RedBlackNode(Long value, RedBlackNode left, 
+                        RedBlackNode right, RedBlackNode parent, 
+                        boolean isRed){
+        super(value);
+        this.left = left;
+        this.right = right;
+        this.parent = parent;
+        this.isRed = isRed;
+        this.isNull = false;
+    }
+
+    public RedBlackNode(Long value, RedBlackNode parent, boolean isRed){
+        super(value);
+        RedBlackNode nullLeft = new RedBlackNode(0l, null, null, null, false, true);
+        RedBlackNode nullRight = new RedBlackNode(0l, null, null, null, false, true);
+        this.left = nullLeft;
+        this.right = nullRight;
+        this.parent = parent;
+        this.isRed = isRed;
+        this.isNull = false;
+    }
+
+    public RedBlackNode(Long value, boolean isRed){
+        this(value, null, isRed);
+    }
+
+    
 }
 
 class RedBlackTree extends BST {
