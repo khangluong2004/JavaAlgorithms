@@ -39,7 +39,9 @@ class BSTNode extends BinaryTreeNode {
     }
 
     public BSTNode(Long value, BSTNode left, BSTNode right, BSTNode parent){
-        super(value, left, right);
+        super(value);
+        this.left = left;
+        this.right = right;
         this.parent = parent;
     }
 }
@@ -245,31 +247,54 @@ class RedBlackNode extends BSTNode{
     RedBlackNode parent;
     boolean isRed;
 
+    public RedBlackNode(Long value){
+        super(value);
+        this.isRed = false;
+    }
+
     public RedBlackNode(Long value, boolean isRed){
         super(value);
         this.isRed = isRed;
     }
 
     public RedBlackNode(Long value, RedBlackNode parent, boolean isRed){
-        super(value, parent);
+        super(value);
+        this.parent = parent;
         this.isRed = isRed;
     }
 
     public RedBlackNode(Long value, RedBlackNode left, 
                         RedBlackNode right, RedBlackNode parent, boolean isRed){
-        super(value, left, right, parent);
+        super(value);
+        this.left = left;
+        this.right = right;
+        this.parent = parent;
         this.isRed = isRed;
     }
 }
 
 class RedBlackTree extends BST {
+    // Inspired by: https://samuelalbanie.com/files/digest-slides/2022-12-brief-guide-to-red-black-trees.pdf
     // Difference: Deletion and Insertion
+    RedBlackNode root;
+
     public RedBlackTree(List<Long> input){
         // input: List of values of nodes
         super(input);
     }
 
-    private void rotateRight(RedBlackNode curNode){
+     public void inorderTraverse(RedBlackNode curNode){
+        if (curNode == null){
+            return;
+        }
+        
+        inorderTraverse(curNode.left);
+        System.out.println(curNode.value + ": " + 
+            (curNode.isRed ? "Red": "Black"));
+        inorderTraverse(curNode.right);
+    }
+
+    protected void rotateRight(RedBlackNode curNode){
         // curNode must be the left-child of parent
         // parent != null
         RedBlackNode parent = curNode.parent;
@@ -289,7 +314,7 @@ class RedBlackTree extends BST {
             parent.value == grandparent.left.value);
     }
 
-    private void rotateLeft(RedBlackNode curNode){
+    protected void rotateLeft(RedBlackNode curNode){
         // curNode must be the right-child of parent
         // parent != null
         RedBlackNode parent = curNode.parent;
@@ -308,15 +333,137 @@ class RedBlackTree extends BST {
         helper_assign_child(grandparent, curNode, 
             parent.value == grandparent.left.value);
     }
+
+    protected void rotate(RedBlackNode curNode){
+        // Given a node and its parent, there's always
+        // 1 type of feasible rotation
+        RedBlackNode parent = curNode.parent;
+        if (curNode.value == parent.left.value){
+            rotateLeft(curNode);
+        } else {
+            rotateRight(curNode);
+        }
+    }
+
+    public void addElem(Long value){
+        // At root
+        if (this.root == null){
+            this.root = new RedBlackNode(value, false);
+            return;
+        }
+
+        RedBlackNode cur_node = this.root;
+        RedBlackNode pre_node = cur_node;
+        boolean right = false;
+        while (cur_node != null){
+            pre_node = cur_node;
+            if (value > cur_node.value){
+                cur_node = cur_node.right;
+                right = true;
+            } else {
+                cur_node = cur_node.left;
+                right = false;
+            }
+        }
+
+        RedBlackNode addNode = new RedBlackNode(value, pre_node, false);
+
+        if (right){
+            pre_node.right = addNode;
+        } else {
+            pre_node.left = addNode;
+        }
+
+        fixColorAdd(pre_node);    
+    }
+
+    protected void fixColorAdd(RedBlackNode curNode){
+        RedBlackNode parent = curNode.parent;
+
+        // Base case 1: Root
+        if (parent == null){
+            curNode.isRed = false;
+            return;
+        }
+
+        // Base case 2: Black parent
+        if (parent.isRed == false){
+            curNode.isRed = true;
+            return;
+        }
+
+        // Case 3: Red parent
+        // Find uncle
+        RedBlackNode uncle;
+        boolean isUncleLeft;
+        if (parent.value == parent.parent.left.value){
+            uncle = parent.parent.right;
+            isUncleLeft = false;
+        } else {
+            uncle = parent.parent.left;
+            isUncleLeft = true;
+        }
+
+        // Base 3a: Black uncle
+        if (uncle.isRed == false){
+            // Check whether child is in left/ right branch
+            boolean isChildLeft;
+            if (parent.left.value == curNode.value){
+                isChildLeft = true;
+            } else {
+                isChildLeft = false;
+            }
+
+            // 3ai: u is "away" from its uncle
+            // Eg: Uncle on right branch, u on left
+            if (isChildLeft ^ isUncleLeft){
+                // Turn grandparent to red
+                parent.parent.isRed = true;
+                // Rotate parent
+                rotate(parent);
+                // Set parent black
+                parent.isRed = false;
+                // Set curNode red
+                curNode.isRed = true;
+                return;
+            }
+            
+            // 3aii: u is "toward" its uncle
+            // Turn grandparent red
+            parent.parent.isRed = true;
+            // Rotate curNode
+            rotate(curNode);
+            // Rotate curNode again
+            rotate(curNode);
+            // Set curNode to black
+            curNode.isRed = false;
+            return;
+        }
+        
+        // Recursion case 3b: Red uncle
+        // Push the problem up the tree
+
+        // Turn uncle and parent black
+        uncle.isRed = false;
+        parent.isRed = false;
+        // Turn curNode red
+        curNode.isRed = true;
+        // Now determine the colour of the grandparent node
+        fixColorAdd(parent.parent);
+        return;
+    }
 }
 
+// B-tree: Future implementation
 //------------------------------
 // Testing
 
 public class TreePrac {
     public static void main(String[] args) {
-        System.out.println("BINARY TREE:");
         List<Long> nodes = new ArrayList<Long>(Arrays.asList(1l, 2l, 176l, 19l, 99l));
+
+        // Binary tree
+        System.out.println(" BINARY TREE:");
         BST testBst = new BST(nodes);
         testBst.inorderTraverse(testBst.root);
 
@@ -335,6 +482,13 @@ public class TreePrac {
         System.out.println("Minimum node val: " + testBst.findMin(testBst.root).value);
         System.out.println("Maximum node val: " + testBst.findMax(testBst.root).value);
         System.out.println("Height: " + testBst.getHeight(testBst.root));
+
+        //-----------------
+        // Red-black tree
+        System.out.println("\n RED-BLACK TREE");
+
+        RedBlackTree testRedBlackTree = new RedBlackTree(nodes);
+        testRedBlackTree.inorderTraverse(testRedBlackTree.root);
 
     }
 }
