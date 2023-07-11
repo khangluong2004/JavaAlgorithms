@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class GraphHT {
     // Recommended: Easy to implement & quite efficient
     // Graphs as Hash table of hash table
-    HashMap<Integer, HashMap<Integer, Integer>> graph;
+    HashMap<Integer, HashMap<Integer, Integer>> graph = new HashMap<Integer, HashMap<Integer, Integer>>();
 
     public GraphHT(int[][] edges){
         for (int i = 0; i < edges.length; i++){
@@ -21,6 +21,10 @@ public class GraphHT {
 
     public void addEdge(int[] edge){
         HashMap<Integer, Integer> curAdj = graph.get(edge[0]);
+        if (curAdj == null){
+            curAdj = new HashMap<Integer, Integer>();
+            graph.put(edge[0], curAdj);
+        }
         curAdj.put(edge[1], edge[2]);
     }
 
