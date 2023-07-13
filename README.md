@@ -6,7 +6,10 @@ Topics covered:
 Algorithms:
 1. Search: Binary & Linear 
 2. Sort: Quick, Counting & Radix
-3. Graph theory: Breadth-first, Depth-first
+3. Graph theory: 
+- Search: Breadth-first, Depth-first
+- Shortest path: Djikstra, Bellman-Ford (TBC)
+- Topological sort: Kahn's algorithm
 
 Data structures:
 1. HashMap

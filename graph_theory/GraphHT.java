@@ -6,7 +6,10 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 // Implementation of Directed graph
 // Graph = Set of nodes + Set of edges (with weights)
@@ -36,6 +39,9 @@ public class GraphHT {
         }
         curAdj.put(edge[1], edge[2]);
     }
+
+    //-----------------
+    // Search
 
     // Helper functions to re-create travelled paths
     private void findPath(int[] parents, LinkedList<Integer> path, int start, int search_elem){
@@ -139,10 +145,76 @@ public class GraphHT {
 
     }
 
-    
+    //--------------------
+    // Shortest path
+    // Djikstra algorithm, supported by PriorityQueue (Heap) for optimal minimum extraction
+    // Used only on POSITIVE weights graph
+    // 
+    public int Djikstra(int start, int search_elem, LinkedList<Integer> path){
+        int[] parents = new int[num_nodes];
+
+        // Extra array of cost to keep track of update
+        // for updating parents
+        int[] costs = new int[num_nodes];
+        Arrays.fill(costs, Integer.MAX_VALUE);
+        // Heap for minimum cost
+        PriorityQueue<ArrayList<Integer>> costHeap = 
+            new PriorityQueue<ArrayList<Integer>>((a, b) -> { return (b.get(1) - a.get(1));});
+
+        HashSet<Integer> visited = new HashSet<Integer>();
+
+        ArrayList<Integer> cur_info = new ArrayList<Integer>(3);
+        cur_info.add(start);
+        cur_info.add(0);
+        costHeap.add(cur_info);
+        while (visited.size() < num_nodes){
+            // Get the node with current minimum cost
+            ArrayList<Integer> min_node = costHeap.poll();
+            // Could contain visited node
+            while (visited.contains(min_node.get(0))){
+                min_node = costHeap.poll();
+            }
+            // Exit when search_elem is marked as minimum node
+            if (min_node.get(0) == search_elem){
+                findPath(parents, path, start, search_elem);
+                return min_node.get(1);
+            }
+            visited.add(min_node.get(0));
+
+            // Add new cost for all neighbours
+            Set<Integer> neighbours = graph.get(min_node.get(0)).keySet();
+            for (int neighbour: neighbours){
+                if (visited.contains(neighbour)){
+                    continue;
+                }
+
+                int update_cost = min_node.get(1) + graph.get(min_node.get(0)).get(neighbour);
+                if (update_cost < costs[neighbour]){
+                    costs[neighbour] = update_cost;
+
+                    ArrayList<Integer> neighbour_node = new ArrayList<Integer>(3);
+                    neighbour_node.add(neighbour);
+                    neighbour_node.add(update_cost);
+                    costHeap.add(neighbour_node);
+
+                    // Update parents for tracking path
+                    parents[neighbour] = min_node.get(0);
+                }
+            }
+        }
+
+        return -1;
+
+    }
+
 
     public static void main(String[] args) {
-        int[][] test_edges = {{0, 1, 5}, {1, 2, 3}, {2, 3, 4}, {1, 3, 5}, {3, 4, 9}, {4, 5, 8}};
+        int[][] test_edges = {
+            {0, 1, 5}, 
+            {1, 2, 3}, {1, 3, 5},
+            {2, 3, 4}, 
+            {3, 4, 9}, {3, 5, 1},  
+            {4, 5, 8}};
         GraphHT testGraph = new GraphHT(test_edges, 6);
 
         // BFS
@@ -158,6 +230,14 @@ public class GraphHT {
         start = System.nanoTime();
         System.out.println("DFS test: " + testGraph.DFS(1, 5, DFS_path));
         System.out.println("DFS path: " + DFS_path);
+        end = System.nanoTime();
+        System.out.println("Takes: " + (end - start) + " ns \n");
+
+        // Djikstra
+        LinkedList<Integer> Djikstra_path = new LinkedList<Integer>();
+        start = System.nanoTime();
+        System.out.println("Minimum cost: " + testGraph.Djikstra(0, 5, Djikstra_path));
+        System.out.println("Djikstra path: " + Djikstra_path);
         end = System.nanoTime();
         System.out.println("Takes: " + (end - start) + " ns \n");
     }
