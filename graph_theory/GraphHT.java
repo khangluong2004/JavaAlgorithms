@@ -151,7 +151,7 @@ public class GraphHT {
         System.out.println("BFS test: " + testGraph.BFS(1, 5, BFS_path));
         System.out.println("BFS path: " + BFS_path);
         long end = System.nanoTime();
-        System.out.println("Takes: " + (end - start) + " ns");
+        System.out.println("Takes: " + (end - start) + " ns \n");
 
         // DFS
         LinkedList<Integer> DFS_path = new LinkedList<Integer>();
@@ -159,7 +159,7 @@ public class GraphHT {
         System.out.println("DFS test: " + testGraph.DFS(1, 5, DFS_path));
         System.out.println("DFS path: " + DFS_path);
         end = System.nanoTime();
-        System.out.println("Takes: " + (end - start) + " ns");
+        System.out.println("Takes: " + (end - start) + " ns \n");
     }
 
 }
