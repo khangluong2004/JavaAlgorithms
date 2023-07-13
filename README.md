@@ -6,7 +6,7 @@ Topics covered:
 Algorithms:
 1. Search: Binary & Linear 
 2. Sort: Quick, Counting & Radix
-3. Graph theory coming soon!
+3. Graph theory: Breadth-first, Depth-first
 
 Data structures:
 1. HashMap
