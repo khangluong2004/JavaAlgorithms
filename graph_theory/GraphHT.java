@@ -6,8 +6,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -38,6 +36,10 @@ public class GraphHT {
             graph.put(edge[0], curAdj);
         }
         curAdj.put(edge[1], edge[2]);
+    }
+
+    public void removeEdge(int[] edge){
+        graph.get(edge[0]).remove(edge[1]);
     }
 
     //-----------------
@@ -148,8 +150,9 @@ public class GraphHT {
     //--------------------
     // Shortest path
     // Djikstra algorithm, supported by PriorityQueue (Heap) for optimal minimum extraction
+    // Time complexity: O((V + E) log(V)) with heap, or O(V^2) without
     // Used only on POSITIVE weights graph
-    // 
+    
     public int Djikstra(int start, int search_elem, LinkedList<Integer> path){
         int[] parents = new int[num_nodes];
 
@@ -204,7 +207,112 @@ public class GraphHT {
         }
 
         return -1;
+    }
 
+    // Bellman-Ford algorithm, used for negative weights
+    // Time complexity: O(V * E)
+    // Return minimum distance from source to all nodes (at corresponding index); 
+    // or empty list if negative cycle exists
+
+    // Inefficient compared to Djikstra, but can be used for negative weights
+    // Used to detect negative cycle
+    // Intuition:
+    // 1. Without negative cycle: Paths contain at max V nodes
+    // 2. With negative cycle: Shorter path with > V nodes
+
+    public int[] BellmanFord(int start){
+        int[] dists = new int[num_nodes];
+        Arrays.fill(dists, Integer.MAX_VALUE);
+        dists[start] = 0;
+
+        // Iterate all possible cases
+        for (int v=0; v < num_nodes - 1; v++){
+            // Iterate through all edges
+            for (int start_node: graph.keySet()){
+                HashMap<Integer, Integer> cur_map = graph.get(start_node);
+                for (int end_node: cur_map.keySet()){
+                    dists[end_node] = Math.min(dists[start_node] + cur_map.get(end_node), 
+                                            dists[end_node]);
+                }
+            }
+        }
+
+        // Check negative cycle
+        for (int start_node: graph.keySet()){
+            HashMap<Integer, Integer> cur_map = graph.get(start_node);
+            for (int end_node: cur_map.keySet()){
+                if (dists[start_node] + cur_map.get(end_node) < dists[end_node]){
+                    return new int[0];
+                }
+            }
+        }
+
+        return dists;
+    }
+
+    // Topological sort: Kahn's algorithm
+    // Topological sort: A linear arrangments ensuring that each node's
+    // precedences are satisfied
+
+    // Time complexity: O(V + E)
+    // Perform topological sort on the graph;
+    // If there is no loop, return the sort as Queue, else return null
+    
+    // The graph must be acyclic for this to be possible
+    // Assuming that an edge A -> B means: A must be completed before B
+
+    // Inituition (Indegree = Number of edge coming into a node):
+    // 1. Node with indegree = 0 means they have no precedence
+    // 2. Remove the Node with indegree 0 along with their edges
+    // 3. Repeat until no nodes with indegree 0 
+    // 4. If all nodes removed = No cycle, otherwise there is a cycle
+    public Queue<Integer> KahnSort(){
+        // Pre-calculate all indegree for each node
+        int[] indegree = new int[num_nodes];
+
+        for (int start_node: graph.keySet()){
+            for (int end_node: graph.get(start_node).keySet()){
+                indegree[end_node] += 1;
+            }
+        }
+
+
+        // Find the zero-indegree and add to check_queue
+        Queue<Integer> sort_results = new LinkedList<Integer>();
+        Queue<Integer> checkQueue = new LinkedList<Integer>();
+
+        for (int i=0; i < num_nodes; i++){
+            if (indegree[i] == 0){
+                checkQueue.add(i);
+            }
+        }
+
+        // Remove the zero-indegree and edit in-degree
+        // Add new zero-indegree to checkQueue 
+        // Loop until checkQueue is empty
+        while (!checkQueue.isEmpty()){
+            int top_elem = checkQueue.poll();
+            sort_results.add(top_elem);
+
+            if (graph.get(top_elem) == null){
+                continue;
+            }
+
+            Set<Integer> neighbours = graph.get(top_elem).keySet();
+            for (int neighbour: neighbours){
+                indegree[neighbour] -= 1;
+                if (indegree[neighbour] == 0){
+                    checkQueue.add(neighbour);
+                }
+            }
+        }
+
+        // Check if there is a loop or not
+        if (sort_results.size() < num_nodes){
+            return null;
+        } else {
+            return sort_results;
+        }
     }
 
 
@@ -213,7 +321,7 @@ public class GraphHT {
             {0, 1, 5}, 
             {1, 2, 3}, {1, 3, 5},
             {2, 3, 4}, 
-            {3, 4, 9}, {3, 5, 1},  
+            {3, 4, 9}, {3, 5, 7},  
             {4, 5, 8}};
         GraphHT testGraph = new GraphHT(test_edges, 6);
 
@@ -240,6 +348,19 @@ public class GraphHT {
         System.out.println("Djikstra path: " + Djikstra_path);
         end = System.nanoTime();
         System.out.println("Takes: " + (end - start) + " ns \n");
+
+        // Bellman-Ford
+        start = System.nanoTime();
+        System.out.println("Minimum cost: " + Arrays.toString(testGraph.BellmanFord(0)));
+        end = System.nanoTime();
+        System.out.println("Takes: " + (end - start) + " ns \n");
+
+        // Kahn's topological sort
+        start = System.nanoTime();
+        System.out.println("Topological sort: " + testGraph.KahnSort());
+        end = System.nanoTime();
+        System.out.println("Takes: " + (end - start) + " ns \n");
+
     }
 
 }
