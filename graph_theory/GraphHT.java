@@ -491,6 +491,10 @@ public class GraphHT {
         end = System.nanoTime();
         System.out.println("Takes: " + (end - start) + " ns \n");
 
+        // Note: Due to only apply on undirected graph, 
+        // Kruskal and Prim might contain duplicated edge (eg: 1-2, 2-1)
+        // which doesn't really matter as there is no direction
+        
         // Prim's algorithm
         start = System.nanoTime();
         System.out.println("Prim's tree: " + testGraph.Prim().graph);
