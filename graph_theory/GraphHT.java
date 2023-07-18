@@ -6,10 +6,11 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
-// Implementation of Directed graph
+// Implementation of Directed, Simple graph
 // Graph = Set of nodes + Set of edges (with weights)
 // Each node is uniquely labelled from 0 to n;
 // Each edge is represented by a pair of nodes & weight: [Node1, Node2, Weight]
@@ -250,6 +251,7 @@ public class GraphHT {
         return dists;
     }
 
+    // ----------------------------
     // Topological sort: Kahn's algorithm
     // Topological sort: A linear arrangments ensuring that each node's
     // precedences are satisfied
@@ -315,14 +317,142 @@ public class GraphHT {
         }
     }
 
+    // -------------------------
+    // Minimum spanning tree
+    // Can work for negative weights
+    // But must be UNDIRECTED graph
+
+    // Prim's algorithm optimized with Heap
+    // Time complexity: O(E log(V))
+    // Note: log(E) <= log(V^2) <= 2 log(V), so there is 
+    // no difference between log(E) and log(V) 
+
+    // Return the graph of the minimum spanning tree
+
+    // Helper class for the heap: Edge (endNode, weight, startNode)
+    class Edge{
+        int start;
+        int end;
+        int weight;
+
+        public Edge(int start, int end, int weight){
+            this.start = start;
+            this.end = end;
+            this.weight = weight;
+        }
+    }
+
+    public GraphHT Prim(){
+        GraphHT spanTree = new GraphHT(new int[0][0], this.num_nodes); 
+
+        // Min heap used to keep track of the minimum edges
+        // connecting nodes already in the tree and nodes that aren't 
+        // in the tree 
+        PriorityQueue<Edge> minHeap = new PriorityQueue<Edge>(
+            (a, b) -> {return a.weight - b.weight;});
+
+        // Visited: Keep track by a boolean array (as each node
+        // is labelled from 0 to n-1)
+        boolean[] visited = new boolean[this.num_nodes];
+
+        // 1. Pick a random node to start
+        int start = 0;
+        visited[start] = true;
+
+        // 2. Add all vertices connecting with `start`
+        HashMap<Integer, Integer> connectEdges = this.graph.get(start);
+
+        for (int connectNode: connectEdges.keySet()){
+            minHeap.add(new Edge(start, connectNode, connectEdges.get(connectNode)));
+        }
+
+        // 3. While the minHeap is not empty (still nodes to connect)
+        while (!minHeap.isEmpty()){
+            // 3a. Add the minimum connected edge to the tree
+            // 3b. Add new node to visited
+            Edge shortest = minHeap.poll();
+            while (visited[shortest.end]){
+                shortest = minHeap.poll();
+                if (shortest == null){
+                    return spanTree;
+                }
+            }
+
+            int[] addEdge = new int[3];
+            addEdge[0] = shortest.start;
+            addEdge[1] = shortest.end;
+            addEdge[2] = shortest.weight;
+            spanTree.addEdge(addEdge);
+
+            visited[shortest.end] = true;
+
+            // 3c. Add all new connected edge to minHeap
+
+            connectEdges = this.graph.get(shortest.end);
+
+            for (int connectNode: connectEdges.keySet()){
+                minHeap.add(new Edge(shortest.end, connectNode, connectEdges.get(connectNode)));
+            }
+        }
+
+        return spanTree;
+    }
+
+    // Kruskal's algorithm
+    // Time complexity: O(E log V)
+    // Rank all edges, and pick from smallest to largest
+    // Make sure no cycle is created
+
+    public GraphHT Kruskal(){
+        GraphHT spanTree = new GraphHT(new int[0][0], this.num_nodes);
+        boolean[] visited = new boolean[this.num_nodes];
+        
+        LinkedList<Edge> edgeList = new LinkedList<Edge>();
+
+        for (int node: graph.keySet()){
+            HashMap<Integer, Integer> edges = graph.get(node);
+            for (int connectNode: edges.keySet()){
+                Edge new_edge = new Edge(node, connectNode, edges.get(connectNode));
+                edgeList.add(new_edge);
+            }
+        }
+
+        Collections.sort(edgeList, (a, b) -> {return (a.weight - b.weight);});
+
+        while (!edgeList.isEmpty()){
+            // Take shortest edge
+            Edge shortEdge = edgeList.removeFirst();
+            // Check for cycle
+            while (visited[shortEdge.end]){
+                shortEdge = edgeList.removeFirst();
+                if (edgeList.isEmpty()){
+                    return spanTree;
+                }
+            }
+
+            // Add edge to tree and visited
+            int[] curEdge = new int[3];
+            curEdge[0] = shortEdge.start;
+            curEdge[1] = shortEdge.end;
+            curEdge[2] = shortEdge.weight;
+            spanTree.addEdge(curEdge);
+
+            visited[shortEdge.end] = true;
+        }
+
+        return spanTree;
+    }
+
 
     public static void main(String[] args) {
+        // Create undirected graph to test Prim/ Kruskal
+        // Note: Topological sort can't work on undirected graph
         int[][] test_edges = {
-            {0, 1, 5}, 
-            {1, 2, 3}, {1, 3, 5},
-            {2, 3, 4}, 
-            {3, 4, 9}, {3, 5, 7},  
-            {4, 5, 8}};
+            {0, 1, 5}, {1, 0, 5}, 
+            {1, 2, 3}, {1, 3, 5}, {2, 1, 3}, {3, 1, 5},
+            {2, 3, 4}, {3, 2, 4}, 
+            {3, 4, 9}, {3, 5, 7}, {4, 3, 9}, {5, 3, 7},  
+            {4, 5, 8}, {5, 4, 8}};
         GraphHT testGraph = new GraphHT(test_edges, 6);
 
         // BFS
@@ -361,6 +491,17 @@ public class GraphHT {
         end = System.nanoTime();
         System.out.println("Takes: " + (end - start) + " ns \n");
 
+        // Prim's algorithm
+        start = System.nanoTime();
+        System.out.println("Prim's tree: " + testGraph.Prim().graph);
+        end = System.nanoTime();
+        System.out.println("Takes: " + (end - start) + " ns \n");
+
+        // Kruskal's algorithm
+        start = System.nanoTime();
+        System.out.println("Kruskal's tree: " + testGraph.Kruskal().graph);
+        end = System.nanoTime();
+        System.out.println("Takes: " + (end - start) + " ns \n");
     }
 
 }
