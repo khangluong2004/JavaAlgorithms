@@ -17,5 +17,5 @@ Data structures:
 2. List: ArrayList & LinkedList
 3. Stack & Queue
 4. Heap (Priority Queue)
-5. Tree (BinarySearchTree)
+5. Tree (BinarySearchTree, RedBlackTree Insertion)
 
