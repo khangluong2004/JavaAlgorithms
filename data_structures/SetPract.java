@@ -46,11 +46,17 @@ public class SetPract {
         // TreeSet - Maintain a red-black tree underneath
         // Search, Insert, Remove: O(log n)
         // But all elements are sorted
-        Set<Integer> treeSetPract = new TreeSet<Integer>(Collections.reverseOrder());
+        SortedSet<Integer> treeSetPract = new TreeSet<Integer>(Collections.reverseOrder());
         System.out.println("Search: " + treeSetPract.contains(1));
         treeSetPract.addAll(Arrays.asList(1, 2, 3, 54, 59, 57, 5));
         // Order from largest to smallest
         treeSetPract.stream().forEach(System.out::println);
+        // Largest
+        Integer largest = treeSetPract.first();
+        System.out.println("Largest: " + largest);
+        // Smallest
+        Integer smallest = treeSetPract.last();
+        System.out.println("Smallest: " + smallest);
 
     }
 }
