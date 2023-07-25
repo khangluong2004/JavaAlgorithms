@@ -33,13 +33,13 @@ class Search {
         long start = System.nanoTime();
         System.out.println(binarySearch(test, 0, test.length, 30));
         long end = System.nanoTime();
-        System.out.println("Time: " + (end - start)/1000000l + " ms\n");
+        System.out.println("Time: " + (end - start)/ 1000000L + " ms\n");
 
         System.out.println("Linear Search: O(n)");
         start = System.nanoTime();
         System.out.println(linearSearch(test, 0, test.length, 30));
         end = System.nanoTime();
-        System.out.println("Time: " + (end - start)/1000000l + " ms\n");
+        System.out.println("Time: " + (end - start)/ 1000000L + " ms\n");
     }    
-};
+}
 
